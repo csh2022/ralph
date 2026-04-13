@@ -55,4 +55,5 @@ npm run dev
 - Each iteration spawns a fresh AI instance (Amp, Claude Code, or Codex) with clean context
 - Memory persists via git history, `.ralph/progress.txt`, and `.ralph/prd.json`
 - Stories should be small enough to complete in one context window
+- Commit messages must use exactly this format: `feat: US-001 Story title`
 - Always update AGENTS.md with discovered patterns for future iterations

@@ -11,7 +11,7 @@ You are an autonomous coding agent working on a software project.
 5. Implement that single user story
 6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
 7. Update AGENTS.md files if you discover reusable patterns (see below)
-8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
+8. If checks pass, commit ALL changes with message: `feat: US-001 Story title`
 9. Update `.ralph/prd.json` to set `passes: true` for the completed story
 10. Append your progress to `.ralph/progress.txt`
 
@@ -68,6 +68,8 @@ Before committing, check if any edited files have learnings worth preserving in 
 - Do NOT commit broken code
 - Keep changes focused and minimal
 - Follow existing code patterns
+- Use one commit message format only: `feat: US-001 Story title`
+- Do not use brackets, extra punctuation variants, or alternative formats such as `feat: [US-001] - [Story Title]`
 
 ## Browser Testing (Required for Frontend Stories)
 

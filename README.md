@@ -155,7 +155,7 @@ Ralph will:
 2. Pick the highest priority story where `passes: false`
 3. Implement that single story
 4. Run quality checks (typecheck, tests)
-5. Commit if checks pass
+5. Commit if checks pass, using `feat: US-001 Story title`
 6. Update `.ralph/prd.json` to mark story as `passes: true`
 7. Append learnings to `.ralph/progress.txt`
 8. Repeat until all stories pass or max iterations reached
