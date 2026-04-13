@@ -17,6 +17,26 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 - `jq` installed (`brew install jq` on macOS)
 - A git repository for your project
 
+## Go CLI Preview
+
+This repository now includes an in-progress Go implementation of Ralph:
+
+```bash
+go run ./cmd/ralph init
+go run ./cmd/ralph doctor
+go run ./cmd/ralph run
+```
+
+`go run ./cmd/ralph init` does not require a path. If you omit it, Ralph initializes `.ralph/` in the current git repository.
+
+Current scope:
+
+- default tool: Codex
+- default run mode: 10 iterations
+- `.ralph/` layout
+
+The shell workflow remains the stable default while the Go CLI catches up.
+
 ## Setup
 
 ### Option 1: One-command init
