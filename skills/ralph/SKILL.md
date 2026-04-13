@@ -12,7 +12,7 @@ Converts existing PRDs to the prd.json format that Ralph uses for autonomous exe
 
 ## The Job
 
-Take a PRD (markdown file or text) and convert it to `scripts/ralph/prd.json`.
+Take a PRD (markdown file or text) and convert it to `.ralph/prd.json`.
 
 ---
 
@@ -232,24 +232,24 @@ Add ability to mark tasks with different statuses.
 
 ## Archiving Previous Runs
 
-**Before writing a new `scripts/ralph/prd.json`, check if there is an existing one from a different feature:**
+**Before writing a new `.ralph/prd.json`, check if there is an existing one from a different feature:**
 
-1. Read the current `scripts/ralph/prd.json` if it exists
+1. Read the current `.ralph/prd.json` if it exists
 2. Check if `branchName` differs from the new feature's branch name
-3. If different AND `scripts/ralph/progress.txt` has content beyond the header:
-   - Create archive folder: `scripts/ralph/archive/YYYY-MM-DD-feature-name/`
-   - Copy current `scripts/ralph/prd.json` and `scripts/ralph/progress.txt` to archive
-   - Reset `scripts/ralph/progress.txt` with fresh header
+3. If different AND `.ralph/progress.txt` has content beyond the header:
+   - Create archive folder: `.ralph/archive/YYYY-MM-DD-feature-name/`
+   - Copy current `.ralph/prd.json` and `.ralph/progress.txt` to archive
+   - Reset `.ralph/progress.txt` with fresh header
 
-**The `ralph.sh` script handles this automatically** when you run it, but if you are manually updating `scripts/ralph/prd.json` between runs, archive first.
+**The `ralph.sh` script handles this automatically** when you run it, but if you are manually updating `.ralph/prd.json` between runs, archive first.
 
 ---
 
 ## Checklist Before Saving
 
-Before writing `scripts/ralph/prd.json`, verify:
+Before writing `.ralph/prd.json`, verify:
 
-- [ ] **Previous run archived** (if `scripts/ralph/prd.json` exists with different branchName, archive it first)
+- [ ] **Previous run archived** (if `.ralph/prd.json` exists with different branchName, archive it first)
 - [ ] Each story is completable in one iteration (small enough)
 - [ ] Stories are ordered by dependency (schema to backend to UI)
 - [ ] Every story has "Typecheck passes" as criterion
