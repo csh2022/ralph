@@ -124,6 +124,7 @@ This creates `prd.json` with user stories structured for autonomous execution.
 ```
 
 Default is 10 iterations. Use `--tool amp`, `--tool claude`, or `--tool codex` to select your AI coding tool.
+The Codex path runs with `--dangerously-bypass-approvals-and-sandbox`, so use it only in a trusted local repository.
 
 Ralph will:
 1. Create a feature branch (from PRD `branchName`)
