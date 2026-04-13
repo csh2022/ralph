@@ -13,13 +13,16 @@ cd flowchart && npm run dev
 # Build the flowchart
 cd flowchart && npm run build
 
-# Run Ralph with Amp (default)
+# Run Ralph with Codex (default)
 ./ralph.sh [max_iterations]
+
+# Run Ralph with Amp
+./ralph.sh --tool amp [max_iterations]
 
 # Run Ralph with Claude Code
 ./ralph.sh --tool claude [max_iterations]
 
-# Run Ralph with Codex
+# Run Ralph with Codex explicitly
 ./ralph.sh --tool codex [max_iterations]
 ```
 
