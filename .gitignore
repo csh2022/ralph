@@ -14,3 +14,5 @@ progress.txt
 
 # Build artifacts
 output/
+.ralph/
+.codex/

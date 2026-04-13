@@ -23,6 +23,8 @@ func Run(paths project.Paths) ([]Check, error) {
 		checkPath(".ralph/prd.json", paths.PRDFile, true),
 		checkPath(".ralph/progress.txt", paths.ProgressFile, true),
 		checkPath(".ralph/tasks", paths.TaskDir, true),
+		checkPath(".codex/skills/ralph-prd/SKILL.md", paths.RalphPRDSkillFile, true),
+		checkPath(".codex/skills/ralph-prd-converter/SKILL.md", paths.RalphPRDConverterSkillFile, true),
 	}
 
 	if fileExists(paths.PRDFile) {

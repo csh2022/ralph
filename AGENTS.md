@@ -2,58 +2,51 @@
 
 ## Overview
 
-Ralph is an autonomous AI agent loop that runs AI coding tools (Amp, Claude Code, or Codex) repeatedly until all PRD items are complete. Each iteration is a fresh instance with clean context.
+Ralph is now a Go-first Codex CLI project. The active implementation lives under `cmd/` and `internal/`.
+
+Legacy shell/bootstrap/marketplace/flowchart assets were moved to:
+- `backup/legacy-shell/`
 
 ## Commands
 
 ```bash
-# One-command init into another repository
-./init-ralph.sh /path/to/target-repo
+# Build the CLI
+./build.sh
 
-# Run the flowchart dev server
-cd flowchart && npm run dev
+# Run the CLI directly with Go
+go run ./cmd/ralph help
 
-# Build the flowchart
-cd flowchart && npm run build
+# Initialize Ralph in a target repository
+./output/ralph init [path] [--force]
 
-# Run Ralph with Codex (default)
-./.ralph/ralph.sh [max_iterations]
+# Validate the current repository
+./output/ralph doctor
 
-# Run Ralph with Amp
-./.ralph/ralph.sh --tool amp [max_iterations]
+# Start the interactive PRD flow
+./output/ralph prd
 
-# Run Ralph with Claude Code
-./.ralph/ralph.sh --tool claude [max_iterations]
+# Convert a markdown PRD directly
+./output/ralph prd --convert-only .ralph/tasks/prd-example.md
 
-# Run Ralph with Codex explicitly
-./.ralph/ralph.sh --tool codex [max_iterations]
+# Run the autonomous loop
+./output/ralph run [max_iterations]
 ```
 
-## Key Files
+## Active Files
 
-- `ralph.sh` - The bash loop that spawns fresh AI instances (supports `--tool amp`, `--tool claude`, or `--tool codex`)
-- `init-ralph.sh` - One-command bootstrap script that creates `.ralph/` in a target repository
-- `prompt.md` - Instructions given to each AMP instance
--  `CLAUDE.md` - Instructions given to each Claude Code instance
-- `CODEX.md` - Instructions given to each Codex instance
-- `prd.json.example` - Example PRD format
-- `flowchart/` - Interactive React Flow diagram explaining how Ralph works
-
-## Flowchart
-
-The `flowchart/` directory contains an interactive visualization built with React Flow. It's designed for presentations - click through to reveal each step with animations.
-
-To run locally:
-```bash
-cd flowchart
-npm install
-npm run dev
-```
+- `cmd/ralph/` - CLI entrypoint
+- `internal/app/` - command handling
+- `internal/doctor/` - validation checks
+- `internal/project/` - `.ralph/` and `.codex/skills/` state management
+- `internal/runner/` - Codex execution paths
+- `internal/templates/` - embedded prompts and skill templates
+- `build.sh` - builds `output/ralph`
 
 ## Patterns
 
-- Each iteration spawns a fresh AI instance (Amp, Claude Code, or Codex) with clean context
-- Memory persists via git history, `.ralph/progress.txt`, and `.ralph/prd.json`
-- Stories should be small enough to complete in one context window
-- Commit messages must use exactly this format: `feat: US-001 Story title`
-- Always update AGENTS.md with discovered patterns for future iterations
+- The active product surface is the Go CLI, not the legacy shell runner.
+- Repository-local Codex skills live under `.codex/skills/ralph-prd` and `.codex/skills/ralph-prd-converter`.
+- The interactive `ralph prd` flow converts the latest changed `.ralph/tasks/prd-*.md` after Codex exits.
+- Commit messages for autonomous story work must use exactly this format: `feat: US-001 Story title`.
+- Keep legacy compatibility assets under `backup/legacy-shell/` instead of mixing them into the top-level product surface.
+- Always update AGENTS.md with genuinely reusable patterns discovered while changing the active Go implementation.

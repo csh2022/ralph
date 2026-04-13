@@ -94,3 +94,67 @@ const PRDTemplate = `{
   ]
 }
 `
+
+const RalphPRDSkill = `---
+name: ralph-prd
+description: Generate Product Requirements Documents for Ralph workflows.
+user-invocable: true
+---
+
+# Ralph PRD
+
+Create a markdown PRD for the requested feature and save it under .ralph/tasks/.
+
+Rules:
+- Keep the PRD concise and implementation-aware.
+- Prefer outcome-oriented requirements.
+- Make the resulting PRD easy to convert into .ralph/prd.json.
+- Save the file as .ralph/tasks/prd-[feature-name].md.
+`
+
+const PRDSessionPrompt = `You are helping the user create a Ralph feature PRD.
+
+Goals:
+- Follow the repository-local ralph-prd skill behavior if it is available.
+- Ask clarifying questions until the feature is clear enough to implement.
+- Keep the discussion focused on user outcomes, constraints, and validation.
+- When the requirements are clear, write a markdown PRD to .ralph/tasks/prd-[feature-name].md.
+
+Rules:
+- Do not write .ralph/prd.json in this interactive session.
+- Use a stable, descriptive file name under .ralph/tasks/ that starts with prd- and ends with .md.
+- If you revise the plan during the conversation, update the markdown PRD file.
+- Before the user exits, make sure the markdown PRD file exists on disk.
+`
+
+const PRDConvertPromptTemplate = `Convert the markdown PRD at %s into %s.
+
+Requirements:
+- Follow the repository-local ralph-prd-converter skill behavior if it is available.
+- Read the markdown PRD and write valid Ralph JSON to %s.
+- Keep stories small enough for one Ralph iteration each.
+- Order stories by dependency and execution priority.
+- Add "Typecheck passes" to every story.
+- For UI work, add "Verify in browser using dev-browser skill".
+- Preserve the feature intent from the markdown PRD.
+- Do not modify unrelated files.
+`
+
+const RalphPRDConverterSkill = `---
+name: ralph-prd-converter
+description: Convert markdown PRDs into .ralph/prd.json for the Ralph autonomous agent loop.
+user-invocable: true
+---
+
+# Ralph PRD Converter
+
+Convert a markdown PRD into .ralph/prd.json.
+
+Rules:
+- Write valid JSON.
+- Keep stories small enough for one Ralph iteration each.
+- Order stories by dependency and execution priority.
+- Add "Typecheck passes" to every story.
+- For UI work, add "Verify in browser using dev-browser skill".
+- Output must target .ralph/prd.json.
+`

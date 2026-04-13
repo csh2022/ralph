@@ -31,14 +31,18 @@ type UserStory struct {
 }
 
 type Paths struct {
-	RepoRoot       string
-	RalphDir       string
-	PRDFile        string
-	ProgressFile   string
-	TaskDir        string
-	CodePromptFile string
-	LastBranchFile string
-	ArchiveDir     string
+	RepoRoot                   string
+	RalphDir                   string
+	PRDFile                    string
+	ProgressFile               string
+	TaskDir                    string
+	CodePromptFile             string
+	LastBranchFile             string
+	ArchiveDir                 string
+	CodexDir                   string
+	CodexSkillsDir             string
+	RalphPRDSkillFile          string
+	RalphPRDConverterSkillFile string
 }
 
 func Discover(repoHint string) (Paths, error) {
@@ -48,14 +52,18 @@ func Discover(repoHint string) (Paths, error) {
 	}
 	ralphDir := filepath.Join(root, ".ralph")
 	return Paths{
-		RepoRoot:       root,
-		RalphDir:       ralphDir,
-		PRDFile:        filepath.Join(ralphDir, "prd.json"),
-		ProgressFile:   filepath.Join(ralphDir, "progress.txt"),
-		TaskDir:        filepath.Join(ralphDir, "tasks"),
-		CodePromptFile: filepath.Join(ralphDir, "CODEX.md"),
-		LastBranchFile: filepath.Join(ralphDir, ".last-branch"),
-		ArchiveDir:     filepath.Join(ralphDir, "archive"),
+		RepoRoot:                   root,
+		RalphDir:                   ralphDir,
+		PRDFile:                    filepath.Join(ralphDir, "prd.json"),
+		ProgressFile:               filepath.Join(ralphDir, "progress.txt"),
+		TaskDir:                    filepath.Join(ralphDir, "tasks"),
+		CodePromptFile:             filepath.Join(ralphDir, "CODEX.md"),
+		LastBranchFile:             filepath.Join(ralphDir, ".last-branch"),
+		ArchiveDir:                 filepath.Join(ralphDir, "archive"),
+		CodexDir:                   filepath.Join(root, ".codex"),
+		CodexSkillsDir:             filepath.Join(root, ".codex", "skills"),
+		RalphPRDSkillFile:          filepath.Join(root, ".codex", "skills", "ralph-prd", "SKILL.md"),
+		RalphPRDConverterSkillFile: filepath.Join(root, ".codex", "skills", "ralph-prd-converter", "SKILL.md"),
 	}, nil
 }
 
@@ -83,6 +91,12 @@ func EnsureInitialized(paths Paths, force bool) error {
 	if err := os.MkdirAll(paths.ArchiveDir, 0o755); err != nil {
 		return err
 	}
+	if err := os.MkdirAll(filepath.Dir(paths.RalphPRDSkillFile), 0o755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(paths.RalphPRDConverterSkillFile), 0o755); err != nil {
+		return err
+	}
 
 	if err := writeFile(paths.PRDFile, []byte(templates.PRDTemplate), force); err != nil {
 		return err
@@ -91,6 +105,12 @@ func EnsureInitialized(paths Paths, force bool) error {
 		return err
 	}
 	if err := writeFile(filepath.Join(paths.TaskDir, "prd-template.md"), []byte(templates.TaskTemplate), force); err != nil {
+		return err
+	}
+	if err := writeFile(paths.RalphPRDSkillFile, []byte(templates.RalphPRDSkill), force); err != nil {
+		return err
+	}
+	if err := writeFile(paths.RalphPRDConverterSkillFile, []byte(templates.RalphPRDConverterSkill), force); err != nil {
 		return err
 	}
 	if err := ensureProgress(paths.ProgressFile, force); err != nil {
@@ -221,4 +241,63 @@ func trimPrefix(value, prefix string) string {
 		return value[len(prefix):]
 	}
 	return value
+}
+
+type TaskSnapshot struct {
+	ModTimes map[string]time.Time
+}
+
+func SnapshotTaskFiles(taskDir string) (TaskSnapshot, error) {
+	snapshot := TaskSnapshot{ModTimes: map[string]time.Time{}}
+	matches, err := filepath.Glob(filepath.Join(taskDir, "prd-*.md"))
+	if err != nil {
+		return snapshot, err
+	}
+	for _, match := range matches {
+		if filepath.Base(match) == "prd-template.md" {
+			continue
+		}
+		info, err := os.Stat(match)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			return snapshot, err
+		}
+		snapshot.ModTimes[match] = info.ModTime()
+	}
+	return snapshot, nil
+}
+
+func DetectLatestChangedTaskFile(taskDir string, before TaskSnapshot) (string, error) {
+	matches, err := filepath.Glob(filepath.Join(taskDir, "prd-*.md"))
+	if err != nil {
+		return "", err
+	}
+	var selected string
+	var selectedTime time.Time
+	for _, match := range matches {
+		if filepath.Base(match) == "prd-template.md" {
+			continue
+		}
+		info, err := os.Stat(match)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				continue
+			}
+			return "", err
+		}
+		prev, existed := before.ModTimes[match]
+		if existed && !info.ModTime().After(prev) {
+			continue
+		}
+		if selected == "" || info.ModTime().After(selectedTime) {
+			selected = match
+			selectedTime = info.ModTime()
+		}
+	}
+	if selected == "" {
+		return "", errors.New("no new or updated .ralph/tasks/prd-*.md file found")
+	}
+	return selected, nil
 }
