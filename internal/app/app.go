@@ -38,13 +38,13 @@ Usage:
   ralph init [path] [--force]
   ralph doctor
   ralph prd [--convert-only .ralph/tasks/prd-example.md]
-  ralph run [max-iterations] [--tool codex]
+  ralph run [max-iterations] [--tool codex] [--until-done]
 
 Commands:
   init    Create .ralph/ in the target git repository. Defaults to the current directory.
   doctor  Validate the current repository and .ralph setup.
   prd     Start an interactive Codex PRD session, then auto-convert to .ralph/prd.json.
-  run     Execute Ralph with Codex. Defaults to 10 iterations.
+  run     Execute Ralph with Codex. Defaults to 10 iterations; use --until-done for unlimited looping.
 
 Examples:
   ralph init
@@ -54,6 +54,7 @@ Examples:
   ralph prd --convert-only .ralph/tasks/prd-example.md
   ralph run
   ralph run 3
+  ralph run --until-done
 `
 
 func usage() error {
@@ -107,6 +108,7 @@ func runDoctor(args []string) error {
 func runRalph(args []string) error {
 	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 	tool := fs.String("tool", "codex", "execution backend")
+	untilDone := fs.Bool("until-done", false, "run until all stories are complete")
 	fs.SetOutput(os.Stdout)
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -114,6 +116,9 @@ func runRalph(args []string) error {
 
 	maxIterations := 10
 	if fs.NArg() > 0 {
+		if *untilDone {
+			return errors.New("max iterations cannot be combined with --until-done")
+		}
 		_, err := fmt.Sscanf(fs.Arg(0), "%d", &maxIterations)
 		if err != nil || maxIterations < 1 {
 			return fmt.Errorf("invalid max iterations %q", fs.Arg(0))
@@ -137,6 +142,8 @@ func runRalph(args []string) error {
 		Paths:         paths,
 		MaxIterations: maxIterations,
 		Tool:          *tool,
+		UntilDone:     *untilDone,
+		MaxNoProgress: 3,
 	})
 }
 

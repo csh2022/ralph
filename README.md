@@ -43,7 +43,7 @@ go run ./cmd/ralph help
 ralph init [path] [--force]
 ralph doctor
 ralph prd [--convert-only .ralph/tasks/prd-example.md]
-ralph run [max-iterations] [--tool codex]
+ralph run [max-iterations] [--tool codex] [--until-done]
 ```
 
 ### `ralph init`
@@ -101,6 +101,7 @@ Runs the implementation loop.
 Default behavior:
 - tool: `codex`
 - max iterations: `10`
+- optional unlimited mode: `--until-done`
 
 Flow:
 1. validate the repository
@@ -109,7 +110,7 @@ Flow:
 4. run Codex non-interactively
 5. stream output live
 6. re-check `.ralph/prd.json`
-7. stop only when all stories are complete or max iterations is reached
+7. stop when all stories are complete, max iterations is reached, or the no-progress circuit breaker trips
 
 Example:
 
@@ -117,6 +118,7 @@ Example:
 ralph run
 ralph run 1
 ralph run 20
+ralph run --until-done
 ```
 
 ## Repository layout

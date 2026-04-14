@@ -15,6 +15,8 @@ type Config struct {
 	Paths         project.Paths
 	MaxIterations int
 	Tool          string
+	UntilDone     bool
+	MaxNoProgress int
 }
 
 func Run(cfg Config) error {
@@ -39,11 +41,23 @@ func Run(cfg Config) error {
 		return err
 	}
 
-	fmt.Printf("Starting Ralph - Tool: %s - Max iterations: %d\n", cfg.Tool, cfg.MaxIterations)
-	for i := 1; i <= cfg.MaxIterations; i++ {
+	if cfg.UntilDone {
+		fmt.Printf("Starting Ralph - Tool: %s - Max iterations: until done\n", cfg.Tool)
+		fmt.Printf("Circuit breaker: stop after %d consecutive iterations without reducing unfinished stories\n", cfg.MaxNoProgress)
+	} else {
+		fmt.Printf("Starting Ralph - Tool: %s - Max iterations: %d\n", cfg.Tool, cfg.MaxIterations)
+	}
+
+	previousUnfinished := unfinishedCount(prd)
+	noProgressCount := 0
+	for i := 1; cfg.UntilDone || i <= cfg.MaxIterations; i++ {
 		fmt.Println()
 		fmt.Println("===============================================================")
-		fmt.Printf("  Ralph Iteration %d of %d (%s)\n", i, cfg.MaxIterations, cfg.Tool)
+		if cfg.UntilDone {
+			fmt.Printf("  Ralph Iteration %d (until done) (%s)\n", i, cfg.Tool)
+		} else {
+			fmt.Printf("  Ralph Iteration %d of %d (%s)\n", i, cfg.MaxIterations, cfg.Tool)
+		}
 		fmt.Println("===============================================================")
 
 		output, err := runCodex(cfg.Paths)
@@ -55,11 +69,30 @@ func Run(cfg Config) error {
 		if reloadErr == nil && strings.Contains(output, "<promise>COMPLETE</promise>") && !project.HasUnfinishedStories(reloaded) {
 			fmt.Println()
 			fmt.Println("Ralph completed all tasks!")
-			fmt.Printf("Completed at iteration %d of %d\n", i, cfg.MaxIterations)
+			if cfg.UntilDone {
+				fmt.Printf("Completed at iteration %d\n", i)
+			} else {
+				fmt.Printf("Completed at iteration %d of %d\n", i, cfg.MaxIterations)
+			}
 			return nil
 		}
 		if strings.Contains(output, "<promise>COMPLETE</promise>") {
 			fmt.Printf("Completion signal received, but unfinished stories remain in %s. Continuing...\n", cfg.Paths.PRDFile)
+		}
+		if reloadErr == nil {
+			currentUnfinished := unfinishedCount(reloaded)
+			if currentUnfinished < previousUnfinished {
+				noProgressCount = 0
+			} else {
+				noProgressCount++
+			}
+			previousUnfinished = currentUnfinished
+			if cfg.UntilDone && noProgressCount >= cfg.MaxNoProgress {
+				fmt.Println()
+				fmt.Printf("Ralph stopped after %d consecutive iterations without reducing unfinished stories.\n", cfg.MaxNoProgress)
+				fmt.Printf("Check %s for status.\n", cfg.Paths.ProgressFile)
+				return nil
+			}
 		}
 		fmt.Printf("Iteration %d complete. Continuing...\n", i)
 	}
@@ -68,6 +101,16 @@ func Run(cfg Config) error {
 	fmt.Printf("Ralph reached max iterations (%d) without completing all tasks.\n", cfg.MaxIterations)
 	fmt.Printf("Check %s for status.\n", cfg.Paths.ProgressFile)
 	return nil
+}
+
+func unfinishedCount(prd project.PRD) int {
+	count := 0
+	for _, story := range prd.UserStories {
+		if !story.Passes {
+			count++
+		}
+	}
+	return count
 }
 
 func runCodex(paths project.Paths) (string, error) {
